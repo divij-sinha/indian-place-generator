@@ -1,0 +1,241 @@
+<html>
+
+<head>
+    <title>Indian Place Generator</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generation Config Form</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .states-container {
+            margin-top: 10px;
+        }
+
+        .state-input {
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 0 auto;
+            display: block;
+            width: 120px;
+            height: 50px;
+            font-size: 15px;
+        }
+
+        button:hover {
+            background: #0052a3;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        select[multiple] {
+            height: 200px;
+        }
+
+        .help-text {
+            font-size: 0.875em;
+            color: #666;
+            margin-top: 4px;
+        }
+    </style>
+    <script src="https://unpkg.com/maplibre-gl@^4.7.1/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@^4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+</head>
+
+
+<body>
+    <h1>Indian Place Generator</h1>
+
+    <p>
+        Generate fake Indian place names that sound authentic! Start with a given text to create a name that begins with
+        that text.
+    </p>
+    <p>
+        Choose one or more states from the list or the map to generate place names that sound similar to places in those
+        states.
+    </p>
+    <form action="{{url_for('root')}}" method="post" enctype="application/x-www-form-urlencoded">
+        <button type="submit">Generate</button>
+        {% if generations %}
+        <h2>Generated Places</h2>
+        <ul>
+            {% for g in generations %}
+            {% if g[1] != "" %}
+            <li>{{ g[0] }}, {{g[1]}}</li>
+            {% else %}
+            <li>{{ g[0] }}</li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <div class="form-group">
+            <label for="start_text">Starting Text</label>
+            <input type="text" id="start_text" name="start_text" placeholder="Leave Blank to generate randomly">
+        </div>
+
+        <div class="form-group">
+            <label for="n">Number of places to generate:</label>
+            <input type="number" id="n" name="n" value="1" min="1">
+        </div>
+
+        <div class="form-group" onclick="toggle_map()">
+            <label for="states">States:</label>
+            <select id="states" name="states" multiple>
+                <option option_id=0>Andaman & Nicobar Islands</option>
+                <option option_id=1>Andhra Pradesh</option>
+                <option option_id=2>Arunanchal Pradesh</option>
+                <option option_id=3>Assam</option>
+                <option option_id=4>Bihar</option>
+                <option option_id=5>Chandigarh</option>
+                <option option_id=6>Chhattisgarh</option>
+                <option option_id=7>Dadara & Nagar Havelli</option>
+                <option option_id=8>Daman & Diu</option>
+                <option option_id=9>Goa</option>
+                <option option_id=10>Gujarat</option>
+                <option option_id=11>Haryana</option>
+                <option option_id=12>Himachal Pradesh</option>
+                <option option_id=13>Jammu & Kashmir</option>
+                <option option_id=14>Jharkhand</option>
+                <option option_id=15>Karnataka</option>
+                <option option_id=16>Kerala</option>
+                <option option_id=17>Lakshadweep</option>
+                <option option_id=18>Madhya Pradesh</option>
+                <option option_id=19>Maharashtra</option>
+                <option option_id=20>Manipur</option>
+                <option option_id=21>Meghalaya</option>
+                <option option_id=22>Mizoram</option>
+                <option option_id=23>Nagaland</option>
+                <option option_id=24>NCT of Delhi</option>
+                <option option_id=35>Odisha</option>
+                <option option_id=25>Puducherry</option>
+                <option option_id=26>Punjab</option>
+                <option option_id=27>Rajasthan</option>
+                <option option_id=28>Sikkim</option>
+                <option option_id=29>Tamil Nadu</option>
+                <!-- <option>Telangana</option> -->
+                <option option_id=31>Tripura</option>
+                <option option_id=32>Uttar Pradesh</option>
+                <option option_id=33>Uttarakhand</option>
+                <option option_id=34>West Bengal</option>
+
+            </select>
+            <div class="help-text">Hold Ctrl (Cmd on Mac) to select multiple states</div>
+        </div>
+    </form>
+    <div id="map" style="height: 300px;"></div>
+    <script>
+        function toggle_map() {
+            const select = document.getElementById('states');
+            for (var i = 0; i < select.options.length; i++) {
+                {
+                    if (select.options[i].selected) {
+                        map.setFeatureState(
+                            { source: 'states', id: select.options[i].getAttribute('option_id') },
+                            { selected: true }
+                        );
+                    } else {
+                        map.setFeatureState(
+                            { source: 'states', id: select.options[i].getAttribute('option_id') },
+                            { selected: false }
+                        );
+                    }
+
+                }
+            }
+        }
+        var map = new maplibregl.Map({
+            container: 'map', // container id
+            style: 'https://demotiles.maplibre.org/style.json', // style URL
+            center: [78.8718, 21.7679], // starting position [lng, lat]
+            zoom: 2.5 // starting zoom
+        });
+        map.on('load', function () {
+            map.addSource('states', {
+                type: 'geojson',
+                data: '/static/India-States.geojson',
+                generateId: true,
+            });
+            map.addLayer({
+                'id': 'states',
+                'type': 'fill',
+                'source': 'states',
+                'layout': {},
+                'paint': {
+                    'fill-color': '#088',
+                    'fill-opacity': [
+                        'case',
+                        ['boolean', ['feature-state', 'selected'], false],
+                        0.85,
+                        0.45
+                    ],
+                    'fill-outline-color': '#000'
+                }
+            });
+
+        });
+        map.on('click', 'states', function (e) {
+            console.log(e.features[0].id);
+            var state = e.features[0].properties.ST_NM;
+            const select = document.getElementById('states');
+            for (var i = 0; i < select.options.length; i++) {
+                if (select.options[i].value == state) {
+                    if (select.options[i].selected) {
+                        select.options[i].selected = false;
+                        map.setFeatureState(
+                            { source: 'states', id: e.features[0].id },
+                            { selected: false }
+                        );
+                    } else {
+                        select.options[i].selected = true;
+                        map.setFeatureState(
+                            { source: 'states', id: e.features[0].id },
+                            { selected: true }
+                        );
+                    }
+
+                }
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
