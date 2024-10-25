@@ -91,7 +91,10 @@ MAX_LENGTH = 20
 EPOCHS = 10
 BATCH_SIZE = 100
 
-device = torch.device("mps")
+if not torch.backends.mps.is_available():
+    device = torch.device("mps")
+else:
+    device = torch.device("cpu")
 
 warnings.filterwarnings(
     "ignore", message="Calling `map_elements` without specifying `return_dtype`"
