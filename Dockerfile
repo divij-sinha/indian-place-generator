@@ -1,4 +1,4 @@
-FROM ghcr.io/astral-sh/uv:python3.11-bookworm
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm
 
 ENV UV_SYSTEM_PYTHON=1
 ENV UV_PYTHON_DOWNLOADS=0
