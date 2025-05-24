@@ -9,14 +9,19 @@ steps:
       - --file=Dockerfile
       - .
 
-  # 2) Push the image
+ # 2a) Push the SHA-tagged image
   - name: 'gcr.io/cloud-builders/docker'
-    id: push
+    id: push-sha
     args:
       - push
       - ${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE}:$SHORT_SHA
-      - push
-      - ${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE}:latest
+
+ # 2b) Push the latest tag
+  - name: 'gcr.io/cloud-builders/docker'
+    id: push-latest
+    args:
+     - push
+     - ${_REGION}-docker.pkg.dev/${_PROJECT_ID}/${_REPO}/${_SERVICE}:latest
 
   # 3) Deploy to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
