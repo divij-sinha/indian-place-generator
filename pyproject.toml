@@ -1,0 +1,15 @@
+[project]
+name = "indian-place-generator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115.12",
+    "numpy>=2.2.6",
+    "polars>=1.30.0",
+    "tensorboard>=2.19.0",
+    "torch>=2.7.0",
+    "torchaudio>=2.7.0",
+    "torchvision>=0.22.0",
+]
